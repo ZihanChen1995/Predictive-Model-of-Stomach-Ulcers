@@ -1,4 +1,4 @@
-# Predictive-model-of-Stomach-Ulcer
+# Predictive-Model-of-Stomach-Ulcer
 
 
 1. Introduction
