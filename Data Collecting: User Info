@@ -61,8 +61,8 @@ driver = webdriver.Chrome('/usr/local/bin/chromedriver',desired_capabilities=dca
 toy = new_url_list[0:3]
 
 #Log in user name and passwords
-user_name = 'Fortest74076530'
-user_pass = 'Test123456'
+user_name = 'UserName'
+user_pass = 'Passwords'
 
 #Define a fuction for multiprocessing later
 #Now check what we can get
