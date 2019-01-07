@@ -25,7 +25,7 @@ user_name = 'User_Name'
 user_pass = 'Passwords'
 
 # Key words
-se_word = 'lovely dog'
+se_word = 'Stomach Ulcer'
 
 # The first output file coloumn
 out_columns = ['user_name','tweet_content']
@@ -36,7 +36,7 @@ out_columns = ['user_name','tweet_content']
 data_number = 200
 
 # Output flie name
-file_name = 'Normal——New_Out_put.csv'
+file_name = 'New_Out_put.csv'
 
 '''
 Stop here
