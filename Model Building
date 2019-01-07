@@ -95,8 +95,8 @@ from nltk.tokenize import WordPunctTokenizer
 from nltk.tokenize import word_tokenize
 
 #Read the two file we have, with unique encode
-df1 = pd.read_csv('/Users/chenzihan/Desktop/CPE-FinalStage/data_cleaning/text-Data-normal.csv',index_col=0,encoding = 'ISO-8859-1')
-df2 = pd.read_csv('/Users/chenzihan/Desktop/CPE-FinalStage/data_cleaning/text-Data-ulcer.csv',index_col=0,encoding = 'ISO-8859-1') 
+df1 = pd.read_csv('/chenzihan/text-Data-normal.csv',index_col=0,encoding = 'ISO-8859-1')
+df2 = pd.read_csv('/chenzihan/text-Data-ulcer.csv',index_col=0,encoding = 'ISO-8859-1') 
 
 #Now, combine this two file to make the new data set
 df = pd.concat([df1, df2], ignore_index=True)
