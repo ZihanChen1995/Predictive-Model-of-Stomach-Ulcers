@@ -1,0 +1,182 @@
+#In this stage of data collecting, I tried to use the user information I got as the links, and collect more customize info.
+
+#Import necessary package
+import pandas as pd
+from selenium import webdriver
+from fake_useragent import UserAgent
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+import time,re
+from bs4 import BeautifulSoup 
+import multiprocessing as mp
+
+
+#Read the file we got
+total_collect = pd.read_csv('/Zihan/New_Out_put.csv')
+
+#Get the new url we need to collect
+user_list = list(total_collect['user_name'])
+
+#Set a url list to loop
+url_list = []
+
+#Get how many times of roll
+roll_times = 3
+
+#The first output file coloumn
+out_columns = ['tweets','following','follower','likes','jotime','con_tweet']
+
+#Use a function to store the records in csv file
+def tocsv(records,columns,name):
+    data = pd.DataFrame(records,columns=columns)
+    data.to_csv(name,index = None)
+    
+file_name = 'User_Collect.csv'
+
+#Add the url link into the list
+for user_name in user_list:
+    
+    #Firstly we need to clean the @
+    new_user_name = user_name[1:]
+    
+    #Now get the list
+    url_list.append('https://twitter.com/' + new_user_name)
+
+#Remove the duplicate element in url_list
+new_url_list = list(set(url_list))
+
+#Now we will use all the url in list to collcect data
+#Build the browser firstly
+#make browser
+ua=UserAgent()# import UserAgent
+dcap = dict(DesiredCapabilities.PHANTOMJS)# import DesiredCapabilities
+dcap["phantomjs.page.settings.userAgent"] = (ua.random)
+service_args=['--ssl-protocol=any','--ignore-ssl-errors=true']
+driver = webdriver.Chrome('/usr/local/bin/chromedriver',desired_capabilities=dcap,service_args=service_args)
+
+#Used a toy list to do the test
+#We need to split the url in several parts, therefore we don't need to log in again
+toy = new_url_list[0:3]
+
+#Log in user name and passwords
+user_name = 'Fortest74076530'
+user_pass = 'Test123456'
+
+#Define a fuction for multiprocessing later
+#Now check what we can get
+def col_user(url_list,acc,pas,roll_times):
+    
+    record = []
+    
+    start_url = url_list[0]
+    
+    #get data
+    driver.get(start_url)
+    time.sleep(2)
+    
+    #Get log in, otherwise  a window will block our module
+    #Fill in user_name
+    user = driver.find_element_by_xpath('//*[@id="signin-dropdown"]/div[3]/form/div[1]/input')
+    user.send_keys(acc)
+    time.sleep(2)
+    #Fill in password
+    passw = driver.find_element_by_xpath('//*[@id="signin-dropdown"]/div[3]/form/div[2]/input')
+    passw.send_keys(pas)
+    time.sleep(2)
+    #Log in then
+    log_button = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="signin-dropdown"]/div[3]/form/input[1]')))
+    log_button.click()
+    time.sleep(3)
+    
+    for url in url_list:
+        
+        #get numerical data
+        driver.get(url)
+        time.sleep(1)
+        
+        #Now we finish the log in, we need to get the data we need
+        #Firstly, tweets
+        try:
+            tweets = driver.find_element_by_xpath('//*[@id="page-container"]/div[1]/div/div[2]/div/div/div[2]/div/div/ul/li[1]/a/span[3]').text
+        except:
+            tweets = 'NaN'
+        #Following
+        try:
+            following = driver.find_element_by_xpath('//*[@id="page-container"]/div[1]/div/div[2]/div/div/div[2]/div/div/ul/li[2]/a/span[3]').text
+        except:
+            following = 'NaN'
+        #Followes
+        try:
+            follower = driver.find_element_by_xpath('//*[@id="page-container"]/div[1]/div/div[2]/div/div/div[2]/div/div/ul/li[3]/a/span[3]').text
+        except:
+            follower = 'NaN'
+        #Likes
+        try:
+            likes = driver.find_element_by_xpath('//*[@id="page-container"]/div[1]/div/div[2]/div/div/div[2]/div/div/ul/li[4]/a/span[3]').text
+        except:
+            likes = 'NaN'
+        #Join time
+        try:
+            jotime = driver.find_element_by_xpath('//*[@id="page-container"]/div[2]/div/div/div[1]/div/div/div/div[1]/div[3]/span[2]').text
+        except:
+            jotime = 'NaN'
+        
+        #Now we need some textual data
+        #Roll the page firstly
+        for each_time in range(roll_times):
+            try:
+                print(each_time)
+                driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+                time.sleep(1)
+            except:
+                continue
+        
+        #Get the first 120 tweets for each user
+        
+        #Now all the content shows, get the data we need
+        #Since there are some annoying contents on the same page, we need to use BS4    
+        html = driver.page_source
+        soup = BeautifulSoup(html, "lxml")
+        
+        #Find the content box
+        tweet_box = soup.findAll('div', {'class':re.compile("stream-item js-new-items-bar-container new-tweets-bar-visible")})
+        
+        #Define a list to collect tweet
+        con_tweet = []
+        
+        #Begin the loop for the tweet content collecting
+        for tweet in tweet_box:  
+            
+            tweet_content='NaN'  
+            
+            #Process to the context
+            tweet_Content = tweet.find('p',{'class': re.compile("TweetTextSize TweetTextSize--normal js-tweet-text tweet-text")})
+            if tweet_Content:
+                print(tweet_Content)
+                tweet_content = tweet_Content.text
+            
+            #Add them to the dict
+            con_tweet.append(tweet_content)
+
+        
+        #Complie the result
+        record.append((tweets,following,follower,likes,jotime,con_tweet))
+    
+    return record
+ 
+    
+#Define a new function to combine the first two
+def combine_function(fun1,fun2):
+    fun1(fun2)
+    return 'finished'
+
+#Now set the multiprocessing
+def multicore():
+    pool = mp.Pool(processes=2)
+    res = pool.map(combine_function, (tocsv,col_user))
+    
+#Begin the function
+if __name__=='__main__':
+    multicore()
