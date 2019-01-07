@@ -1,0 +1,346 @@
+#In this stage, we use Pandas in Python to clean two kinds of data we collected before: Text Data and Numerical Data.
+
+#This is the file to clean two csv files
+#Import necessary packages
+import pandas as pd
+import warnings
+
+#Avoid unnecessary warning
+warnings.filterwarnings("ignore")
+
+#Read the file we got
+total_collect = pd.read_csv('/chenzihan/dataCollecting/Normal_User_Collect.csv')
+df = total_collect.copy()
+
+#We only have 2 missing value in the first two coloumn, just drop them
+df = df.dropna(subset=['tweets', 'following', 'follower', 'likes', 'jotime'])
+
+#All the data typr are str, we need to transfer them into numerical variable for our model
+#Define a function to finish this
+def tran_num(in_data_list):
+    
+    #Set a new list
+    out_data_list = []
+    
+    for in_data in in_data_list:
+        
+        out_data = 'NA'
+        
+        #Remove the comma
+        if ',' in in_data:
+            mid_data = in_data.replace(',','')
+            out_data = float(mid_data)
+            
+        #Remove the K
+        elif 'K' in in_data:
+            mid_data = in_data.replace('K','')
+            out_data = float(mid_data)*1000
+        
+        #Remove the M
+        elif 'M' in in_data:
+            mid_data = in_data.replace('M','')
+            out_data = float(mid_data)*1000000
+        
+        #For other type
+        else:
+            out_data = in_data
+        
+        #Append it to the list
+        out_data_list.append(out_data)
+    
+    #Return the result we need
+    return out_data_list
+
+#Since we have a strange bug here, we will not use the apply directly
+#We define the list first, then add it into df
+for element in ['tweets', 'following', 'follower', 'likes']:
+    
+    #List our data first
+    mid_lis = list(df[element])
+    #Use the function we define before
+    new_lis = tran_num(mid_lis)
+    #Add it back to df
+    new_name = 'new' + element
+    df[new_name] = new_lis
+    #Last step, drop the column that we won't use anymore
+    df = df.drop(element, axis=1)
+
+#We found a new thing here:
+#Since we use space for 0 data, we need to clean it
+for element in ['newtweets', 'newfollowing', 'newfollower', 'newlikes']:
+    
+    #Remove all the element that has space, and replace with 0
+    df.loc[df[element] == ' ', element] = 0
+    #Now last step for those columns: Change into int
+    df[element] = df[element].astype(int)
+
+#Next step, we need to deal with the year and month
+#We select jotime out, clean it, then put it back
+mid_join = list(df['jotime'])
+#Only contain the year
+new_join = []
+#Write the loop to clean it
+for element in mid_join:
+    
+    if element == ' ':
+        new_ele = 0
+
+    else:
+        new_ele = element[-4:]
+          
+    #Add it to the new_join
+    new_join.append(new_ele)
+
+'''
+This function is try to debug why we cannot transfer column into int. Thanks it!
+a = -1
+for x in new_join:
+    a += 1
+    try:
+        x = int(x)
+    except:
+        print(a)
+'''
+
+#Since we have some error if we just use the astype, we need to clean it more carefully
+def change_num(input_list):
+    
+    #Set the out_list
+    out_list= []
+    
+    #Clean the old data
+    for element in input_list:
+        
+        if element == 0:
+            out_ele = 0
+        
+        #The reason for this happen is the webpage miss this value, mark it
+        elif element == 'asts':     
+            out_ele = 10000    
+        else:
+            out_ele = int(element)
+                
+        out_list.append(out_ele)
+        
+    return out_list
+
+new_join_1 = change_num(new_join)
+
+#Now we met a problem: What is 10000, actually this is missing value
+#We use the number above it to fill it
+for number in new_join_1:
+    #Find the 10000 element
+    if number == 10000:
+        #Find its index
+        num_index = new_join_1.index(number)
+        #Find the element above it
+        new_number = new_join_1[num_index -1]
+        #Replace it
+        new_join_1[num_index] = new_number
+    else:
+        continue
+
+#Now add it back to df
+df['new_join'] = new_join_1
+#Drop the old one
+df = df.drop('jotime', axis=1)
+
+#Now we observe our data, we find we only have three rows with 0, and all the value is empty
+#Then just drop them
+df = df[df.new_join != 0]
+
+#Here is the thing: we need calculate the time period
+df['new_join'] = df['new_join'].map(lambda x: 2018 - x)
+#Now we got the fifth numberical variable
+
+#Now we want to find the sixth one, the video and photo number
+df['pic_num'], df['describe'] = df['pict'].str.split(' ', 1).str
+#We only need the first column, drop the others
+df = df.drop(['describe','pict'], axis=1)
+
+#Now we need to clean this column, we use tran_num fun we define before
+#Firstlt, we fill na with 0
+#Then calculate the mean
+df['pic_num'] = df['pic_num'].fillna(0)
+pic = list(df['pic_num'])
+
+#Now we use the pic to calculate the mean to fill in the missing value
+test_pic = pic.copy()
+
+#Define a list to calculate the mean value
+cal_list = []
+for element in test_pic:
+    
+    #nan is float type in pandas
+    element = str(element)
+    if element == 'nan':
+        continue
+    else:
+        if ',' in element:
+            mid_data = element.replace(',','')
+            out_data = float(mid_data)
+            
+        #Remove the K
+        elif 'K' in element:
+            mid_data = element.replace('K','')
+            out_data = float(mid_data)*1000
+        
+        #Remove the M
+        elif 'M' in element:
+            mid_data = element.replace('M','')
+            out_data = float(mid_data)*1000000
+        #For other type
+        else:
+            try:
+                out_data = float(element)
+            except:
+                continue
+    
+    cal_list.append(out_data)
+    
+#Find the mean value
+pic_mean = sum(cal_list)/len(cal_list)
+
+#Now we use this mean value to fill na value
+new_pic_lis = []
+for element in test_pic:
+    #to avoid space words bother us
+    try:
+        new_el = float(element)
+        new_pic_lis.append(new_el)
+    except:
+        new_el = pic_mean
+        new_pic_lis.append(new_el)
+
+#Now add it back to df
+df['newpicnum'] = new_pic_lis
+#Drop the old one
+df = df.drop('pic_num', axis=1)
+#Since now, we change get six columns of numerical variables
+
+#Now deal with the text one
+import string
+from nltk.corpus import stopwords
+from nltk.stem import PorterStemmer
+from nltk.tokenize import WordPunctTokenizer
+from nltk.tokenize import word_tokenize
+
+#Get the tweet content out of our dataframe
+twee_list = list(df['con_tweet'])
+
+def clean_usr_tew(input_list):
+    
+    #Make a new list to contain content
+    new_twe_con = []
+    
+    #Start with the row first
+    for each_row in input_list:
+        
+        #Which means the tweets content is too short
+        if len(each_row) < 10:
+            out_con = 'NoCon'
+        
+        else:
+            #Build a new list to contain data, with a contain words
+            new_content = 'a'
+        
+            #Split it into several part, use middle list a
+            a = each_row.split(',')
+            #Use x2 as the each element in a
+            for x2 in a:
+                #Ignore the retweet content
+                if 'Retweeted' in x2:
+                    continue
+                #Ignore the empty value
+                elif len(x2) < 2:
+                    continue
+                #Ignore the number value that we haven't used here
+                elif '0' in x2:
+                    continue
+                elif '1' in x2:
+                    continue
+                elif '2' in x2:
+                    continue
+                elif '3' in x2:
+                    continue
+                elif '4' in x2:
+                    continue
+                elif '5' in x2:
+                    continue
+                elif '6' in x2:
+                    continue
+                elif '7' in x2:
+                    continue
+                elif '8' in x2:
+                    continue
+                elif '9' in x2:
+                    continue
+                else:
+                    new_content = new_content + str(x2)
+            #Append all the content into out_con
+            out_con = new_content[1:]
+        
+        new_twe_con.append(out_con)
+        
+    return new_twe_con
+
+#Make this column into list
+new_twee_list_1 = clean_usr_tew(twee_list)
+
+'''
+#Define a function to clean this dataXszcx 
+def data_clean(input_data):
+    
+    #Firstly, split into word
+    input_data = str(input_data)
+    in_data_1 = word_tokenize(input_data)
+    
+    #Then lower the case
+    in_data_2 = [word.lower() for word in in_data_1]
+    
+    #Then move away the punctation
+    trans = str.maketrans('', '', string.punctuation)
+    in_data_3 = [word.translate(trans) for word in in_data_2]
+    
+    #Now we have remove all the punctation
+    #Next step, remove not alphabetic
+    in_data_4 = [word for word in in_data_3 if word.isalpha()]
+    
+    #Then filter out stop words
+    stop_words = set(stopwords.words('english'))
+    new_data = [word for word in in_data_4 if not word in stop_words]
+    
+    #Final Step, reducing each word to its root or base
+    #porter = PorterStemmer()
+    #new_data = [porter.stem(word) for word in in_data_5]
+    
+    #return result
+    return new_data
+
+#Use the second function to clean the new_twee_list again
+new_twee_list_2 = []
+
+#Run the loop again
+for ele in new_twee_list_1:
+    mid_con = data_clean(ele)
+    new_twee_list_2.append(mid_con)
+'''
+#Put it back to original dataframe
+df['new_twee_list'] = new_twee_list_1
+
+#Drop the original row      
+df = df.drop('con_tweet', axis=1)
+
+#Add label column
+df_long = len(df)
+label_list = []
+for x in range(df_long):
+    label_list.append(0)
+df['label'] = label_list
+
+
+#Output text file
+df3 = df[['new_twee_list','label']]
+
+#To csv to maintain
+df3.to_csv('text-Data-normal.csv')
