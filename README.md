@@ -18,7 +18,7 @@ There are two major Python packages we used here: One is called Selenium, while 
 
 Selenium is an open source tool which is used for automating the tests carried out on web browsers, which means it has the power to achieve automatic interaction with the webpage. Since Twitter is a dynamic website, each time when we jump into a new page, the earlier information is always hidden below the latest ones. Therefore you need use some tools to roll the webpage continuously and expand all the content you need. 
 
-Another tool we used, Beautiful Soup, is a python library that extract data from HTML and XML documents, which is a excellent option for navigating, searching, and modifying a parse tree. Beautiful Soup can solve this question easily thanks to its scraping logistic. 
+Beautiful Soup, another tool we used, is a python library that extract data from HTML and XML documents, which is a excellent option for navigating, searching, and modifying a parse tree. Beautiful Soup can solve this question easily thanks to its scraping logistic. 
 
 [Data Collecting: User Filtering](https://github.com/ZihanChen1995/Predictive-Model-of-Stomach-Ulcers/blob/master/Data%20Collecting:%20User%20Filtering)
 This is the script which helps us find the user who has the Stomach Ulcers, then we collect the data of these users.
@@ -28,3 +28,14 @@ Using this script, we can follow the links we collected before, and then get all
 
 
 ## Data Cleaning
+
+[Data Cleaning](https://github.com/ZihanChen1995/Predictive-Model-of-Stomach-Ulcers/blob/master/Data%20Cleaning)
+In this file, I used Pandas to clean the raw data we got from Twitter website. Here are the things I did:
+
+1. Fill in the missing value by different methods. (Mean, Mode)
+2. Change string into int. ('K' to 1,000, 'M' to 1,000,000, e.g.)
+3. Split single coloumn into several parts, which are more meaningful.
+4. Delete the value which contains useless information.
+5. Clean the Stopwords, Punctation, Non-English words.
+6. Transfer the same words in different tense or form. (eat, ate)
+7. Detect the Outliers.
