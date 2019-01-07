@@ -1,0 +1,65 @@
+#Now we have already choosed the best algorithms for our model.
+#It's time to tune the hyper-parameters.
+
+#Import necessary packages
+import pandas as pd
+import warnings
+
+#Avoid unnecessary warning
+warnings.filterwarnings("ignore")
+
+#read the file
+df = pd.read_csv('/chenzihan/final_stage_data.csv',index_col=0)
+
+variables = ['clean_newtweets','clean_newfollowing','clean_newfollower','clean_newlikes','clean_new_join','clean_newpicnum']
+X = df[variables]
+y = df['label']
+
+#We will use the top 3 algorithm we find in the pervious step
+from sklearn.ensemble import AdaBoostClassifier
+ada = AdaBoostClassifier()
+
+from sklearn.ensemble import RandomForestClassifier
+random_forest = RandomForestClassifier()
+
+from sklearn.tree import DecisionTreeClassifier
+decision_tree = DecisionTreeClassifier()
+
+#Let's tune the parameter separately
+from sklearn.model_selection import GridSearchCV
+
+#1. Ada boost
+l1 = [10,30,50,60,80]
+l2 = [0.1,1,10]
+l3 = [None,1]
+para_grid_1 = dict(n_estimators=l1,learning_rate=l2,random_state=l3)
+grid_1 = GridSearchCV(ada, para_grid_1, cv=10, scoring='accuracy')
+grid_1.fit(X,y)
+
+print('ada_best_score', grid_1.best_score_)
+print('ada_best_estimator_', grid_1.best_estimator_)
+print('ada_best_params', grid_1.best_params_)
+
+#2.random_forest
+l4 = [5,10,15]
+l5 = ['gini','entropy']
+l6 = [2,3,4]
+para_grid_2 = dict(n_estimators=l4,criterion=l5,min_samples_leaf=l6)
+grid_2 = GridSearchCV(random_forest, para_grid_2, cv=10, scoring='accuracy')
+grid_2.fit(X,y)
+
+print('random_forest_best_score', grid_2.best_score_)
+print('random_forest_best_estimator_', grid_2.best_estimator_)
+print('random_forest_best_params', grid_2.best_params_)
+
+#3.DecisionTree
+l7 = ['gini','entropy']
+l8 = [2,3,4,5,6]
+l9 = [2,3,4,5,6]
+para_grid_3 = dict(criterion=l7,min_samples_leaf=l8,min_samples_split=l9)
+grid_3 = GridSearchCV(decision_tree, para_grid_3, cv=10, scoring='accuracy')
+grid_3.fit(X,y)
+
+print('DecisionTree_best_score', grid_3.best_score_)
+print('DecisionTree_best_estimator_', grid_3.best_estimator_)
+print('DecisionTree_best_params', grid_3.best_params_)
