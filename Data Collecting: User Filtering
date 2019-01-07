@@ -1,0 +1,147 @@
+# This is the file for data collecting. I used two mainstream packages in Python: Beautiful Soup and Selenium
+
+
+# Import the necessary packages
+from selenium import webdriver
+from fake_useragent import UserAgent
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+import pandas as pd
+from selenium.webdriver.support import expected_conditions as EC
+import time,re,os
+from bs4 import BeautifulSoup 
+
+'''
+Here are all the input variable area
+'''
+
+# Define the start page of our data collecting
+start_url = 'https://twitter.com/search-home'
+
+# Need to log in
+# Otherwise, a window will come out and block what we need
+user_name = 'User_Name'
+user_pass = 'Passwords'
+
+# Key words
+se_word = 'lovely dog'
+
+# The first output file coloumn
+out_columns = ['user_name','tweet_content']
+
+# The number of data you want
+# Here means the page number
+# Data number = n * 20
+data_number = 200
+
+# Output flie name
+file_name = 'Normal——New_Out_put.csv'
+
+'''
+Stop here
+'''
+
+
+# make browser
+# import UserAgent
+ua=UserAgent()
+
+# import DesiredCapabilities
+dcap = dict(DesiredCapabilities.PHANTOMJS)
+dcap["phantomjs.page.settings.userAgent"] = (ua.random)
+service_args=['--ssl-protocol=any','--ignore-ssl-errors=true']
+driver = webdriver.Chrome('/usr/local/bin/chromedriver',desired_capabilities=dcap,service_args=service_args)
+
+#Use a function to store the records in csv file
+def tocsv(records,columns,name):
+    data = pd.DataFrame(records,columns=columns)
+    data.to_csv(name,index = None)
+
+#Define the crawling function
+def get_new_url(url,acc,pas,search_words):
+    
+    #Start with the start url
+    driver.get(url)
+    time.sleep(3)
+    
+    #Firstly we need do the log in
+    log_set = driver.find_element_by_xpath('//*[@id="signin-link"]/span[1]')
+    log_set.click()
+    time.sleep(3)
+    #Fill in user_name
+    user = driver.find_element_by_xpath('//*[@id="signin-dropdown"]/div[3]/form/div[1]/input')
+    user.send_keys(acc)
+    time.sleep(2)
+    #Fill in password
+    passw = driver.find_element_by_xpath('//*[@id="signin-dropdown"]/div[3]/form/div[2]/input')
+    passw.send_keys(pas)
+    time.sleep(2)
+    #Log in then
+    log_button = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="signin-dropdown"]/div[3]/form/input[1]')))
+    log_button.click()
+    time.sleep(3)
+
+    #improt the search information
+    search_contnet = driver.find_element_by_xpath('//*[@id="search-home-input"]')
+    search_contnet.send_keys(search_words)
+    time.sleep(1)
+    #Click the search button
+    button = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, '//*[@id="search-home-form"]/div[2]/button')))
+    button.click()
+    time.sleep(4)  
+    #Turn to the new pages
+    new_url = driver.current_url
+    #return the result
+    return new_url
+
+#Get the new url
+#Now turn in to the content page we need to find
+new_url = get_new_url(start_url,user_name,user_pass,se_word)
+
+#Next step is collecting the User name, user url and the tweet they talked about the search content
+#The input: url:the link you need; time_long:how much data you want, base on the time
+def get_info(url,roll_times):
+
+    #Start the process
+    driver.get(url)
+    #Make a list to record
+    record = []
+
+    #Roll the page firstly
+    for each_time in range(roll_times):
+        print(each_time)
+        driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+        time.sleep(2)
+    
+    #Now all the content shows, get the data we need
+    #Since there are some annoying contents on the same page, we need to use BS4    
+    html = driver.page_source
+    soup = BeautifulSoup(html, "lxml")
+    
+    #Find the content box
+    tweet_box = soup.findAll('li', {'class':re.compile("js-stream-item stream-item stream-item ")})
+    for tweet in tweet_box:  
+        
+        print('In working')
+        # initialize user_name and tweet_content
+        user_name,tweet_content='NaN','NaN'  
+        
+        #Firstlt, find the user name
+        User_name = tweet.find('span',{'class': "username u-dir u-textTruncate"})
+        if User_name: 
+            user_name = User_name.text
+        
+        #Same process to the context
+        tweet_Content = tweet.find('p',{'class': "TweetTextSize js-tweet-text tweet-text"})
+        if tweet_Content: 
+            tweet_content = tweet_Content.text
+        
+        #Record them
+        record.append((user_name,tweet_content))
+    
+    #Return result
+    return record
+
+#Try to run the function
+tocsv(get_info(new_url,data_number), out_columns, file_name)
