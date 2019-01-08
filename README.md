@@ -1,4 +1,4 @@
-# Predictive-Model-of-Stomach-Ulcer
+# Predictive-Model-of-Stomach-Ulcers
 
 
 1. Introduction
@@ -39,3 +39,8 @@ In this file, I used Pandas to clean the raw data we got from Twitter website. H
 5. Clean the Stopwords, Punctation, Non-English words.
 6. Transfer the same words in different tense or form. (eat, ate)
 7. Detect the Outliers.
+
+## Feautre Engineering
+
+[Feature Engineering](https://github.com/ZihanChen1995/Predictive-Model-of-Stomach-Ulcers/blob/master/Feature%20Engineering)
+I did these works in the stage of Feature Engineering:
