@@ -21,15 +21,18 @@ Selenium is an open source tool which is used for automating the tests carried o
 Beautiful Soup, another tool we used, is a python library that extract data from HTML and XML documents, which is a excellent option for navigating, searching, and modifying a parse tree. Beautiful Soup can solve this question easily thanks to its scraping logistic. 
 
 [Data Collecting: User Filtering](https://github.com/ZihanChen1995/Predictive-Model-of-Stomach-Ulcers/blob/master/Data%20Collecting:%20User%20Filtering)
+
 This is the script which helps us find the user who has the Stomach Ulcers, then we collect the data of these users.
 
 [Data Collecting: User Info](https://github.com/ZihanChen1995/Predictive-Model-of-Stomach-Ulcers/blob/master/Data%20Collecting:%20User%20Info)
+
 Using this script, we can follow the links we collected before, and then get all the customize infomarion from each user.
 
 
 ## Data Cleaning
 
 [Data Cleaning](https://github.com/ZihanChen1995/Predictive-Model-of-Stomach-Ulcers/blob/master/Data%20Cleaning)
+
 In this file, I used Pandas to clean the raw data we got from Twitter website. Here are the things I did:
 
 1. Fill in the missing value by different methods. (Mean, Mode)
@@ -43,6 +46,7 @@ In this file, I used Pandas to clean the raw data we got from Twitter website. H
 ## Feautre Engineering
 
 [Feature Engineering](https://github.com/ZihanChen1995/Predictive-Model-of-Stomach-Ulcers/blob/master/Feature%20Engineering)
+
 I did these works in the stage of Feature Engineering:
 1. Delete the outlier, based on the principle on standard deviation. (4 Standard Deviations from the Mean)
 2. Use Min-Max Normalization to normalize the data
@@ -52,3 +56,16 @@ I did these works in the stage of Feature Engineering:
 [Model Building](https://github.com/ZihanChen1995/Predictive-Model-of-Stomach-Ulcers/blob/master/Model%20Building)
 
 [Grid-Search](https://github.com/ZihanChen1995/Predictive-Model-of-Stomach-Ulcers/blob/master/Grid-Search:%20Hyper-Parameters)
+
+Till now we have all the data that has been cleaned, including seven feature columns, and one target column called ”label”. Before we started our ﬁnal model building, here is a brief introduction of all the input features our model will use.
+
+#### tweets: The number of tweets this user has 
+#### following: The number of account this user is following 
+#### followers: The number of follower for this user 
+#### join time: The time period since this user started use Twitter 
+#### picture: The number of pictures or videos this user has 
+#### likes: How many likes this user received tweet con: Whole tweet content of 300 recent tweets 
+#### label: Target Value. 1 means stomach ulcer, 0 means normal 
+
+
+As we talked at the beginning, we used the ﬁrst six columns, which all contain numerical data, to build the classiﬁcation model, and the last feature column, tweet content, to build another model based on this textual information. Utilizing different data source and algorithms, we will compare the accuracy in the result part.
