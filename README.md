@@ -74,7 +74,8 @@ As we talked at the beginning, we used the ﬁrst six columns, which all contain
 
 If we want to achieve the best accuracy of our model, ﬁrstly we need to choose a appropriate algorithm for our problem, then we need to tune the hyper-parameter for this algorithm. Before we dive into the section of tuning the parameter, we want to select out the best algorithm for our model. Therefore, we selected 10 kinds of commonly used classiﬁcation methods, containing Logistic Regression, kNN, Gaussian, Perceptron, MLP Classiﬁer, Linear SVC, SGD, Decision Tree, Random Forest, and Ada Boost. We used these functions with the default parameters, and used 10 folds cross validation to begin the ﬁrst ﬁlter iteration of our model building. The result is shown below.
 
-Result:
+_Result:_
+
 <img width="215" alt="2019-01-08 10 01 41" src="https://user-images.githubusercontent.com/36064256/50874175-036a6200-1391-11e9-9841-6d1b75d03fea.png">
 
 It’s easy to see that Ada Boost, Random Forest and Decision Tree are the top 3 algorithms that reach to over 0.95 accuracy, which is an amazing score for our dataset. To see whether we can keep improve them, I chose the Grid Search function from SkLearn website to tune the parameters. After tuned the hyper-parameters for each algorithm, Ada Boost with n estimators is 1, learning rate is 80 and random state is None, returned us the best accuracy, 0.9762.
@@ -83,7 +84,8 @@ It’s easy to see that Ada Boost, Random Forest and Decision Tree are the top 3
 
 Using textual data to build machine learning model. Since computer can only understand the number but not string, ﬁrstly we need to transfer the nominal data into number, using the TF-IDF encoding. Using this method, we encode our textual data into numerical ones. Then as we usually do in machine learning, we random split them into training data and test for 100 times, and using the accuracy to do the evaluation. This time we choose the MLP Classiﬁer as the main algorithm, which is commonly used in text mining ﬁelds. We drew a graph which contains each time result as following.
 
-Result:
+_Result:_
+
 <img width="231" alt="2019-01-08 10 05 08" src="https://user-images.githubusercontent.com/36064256/50874291-7c69b980-1391-11e9-93ea-1c809336d0dd.png">
 
 As we can see in the graph, the accuracy of this algorithm is ﬂoating around 0.78, which is not a very good result of our model building compared to the numerical models. We also calculated the mean score for another 100 times run, which proved that the upper limited of this methods is around 0.8. Therefore we didn’t continue the work on tune the hyperparameter on this algorithms. In the future, if we have more data to analysis, we will use various kinds of algorithms and parameters combination to test this textual model.
