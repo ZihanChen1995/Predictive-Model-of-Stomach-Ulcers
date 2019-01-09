@@ -44,3 +44,10 @@ In this file, I used Pandas to clean the raw data we got from Twitter website. H
 
 [Feature Engineering](https://github.com/ZihanChen1995/Predictive-Model-of-Stomach-Ulcers/blob/master/Feature%20Engineering)
 I did these works in the stage of Feature Engineering:
+1. Delete the outlier, based on the principle on standard deviation. (4 Standard Deviations from the Mean)
+2. Use Min-Max Normalization to normalize the data
+3. Choose the reliable features that we can use in our model, which means those features have high correlation with our target variable. (I used the Random Forest methods here, to get the score of each feature.)
+
+## Model Building
+[Model Building](https://github.com/ZihanChen1995/Predictive-Model-of-Stomach-Ulcers/blob/master/Model%20Building)
+[Grid-Search](https://github.com/ZihanChen1995/Predictive-Model-of-Stomach-Ulcers/blob/master/Grid-Search:%20Hyper-Parameters)
